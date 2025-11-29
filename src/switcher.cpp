@@ -33,7 +33,7 @@
 
 #endif
 
-K_EXPORT_PLASMA_RUNNER(windows, Switcher)
+K_PLUGIN_CLASS_WITH_JSON(Switcher , "plasma-runner-switcher.json")
 
 Switcher::Switcher(QObject *parent, const QVariantList &args)
         : AbstractRunner(parent, args) {

@@ -15,5 +15,3 @@ target_link_libraries(krunner_switcher Qt5::X11Extras)
 
 
 install(TARGETS krunner_switcher DESTINATION ${KDE_INSTALL_PLUGINDIR})
-
-install(FILES plasma-runner-switcher.desktop DESTINATION ${KDE_INSTALL_KSERVICES5DIR})
