@@ -19,21 +19,22 @@
 #define SWITCHER_H
 
 #include <KRunner/AbstractRunner>
+#include <QtGui/qwindowdefs.h>
 
 class KWindowInfo;
 
 
-class Switcher : public Plasma::AbstractRunner {
+class Switcher : public KRunner::AbstractRunner {
 Q_OBJECT
 
 public:
-    Switcher(QObject *parent, const QVariantList &args);
+    Switcher(QObject *parent, const KPluginMetaData &metaData, const QVariantList &args);
 
     ~Switcher() override;
 
-    void match(Plasma::RunnerContext &context) override;
+    void match(KRunner::RunnerContext &context) override;
 
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) override;
+    void run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match) override;
 
 private Q_SLOTS:
 
@@ -44,8 +45,8 @@ private Q_SLOTS:
     void gatherInfo();
 
 private:
-    Plasma::QueryMatch windowMatch(const KWindowInfo &info, qreal relevance = 1.0,
-                                   Plasma::QueryMatch::Type type = Plasma::QueryMatch::ExactMatch);
+    KRunner::QueryMatch windowMatch(const KWindowInfo &info, qreal relevance = 1.0,
+                                    KRunner::QueryMatch::CategoryRelevance categoryRelevance = KRunner::QueryMatch::CategoryRelevance::Highest);
 
     QHash<WId, KWindowInfo> m_windows;
     QHash<WId, QIcon> m_icons;
