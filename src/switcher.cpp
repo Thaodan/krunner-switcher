@@ -35,13 +35,6 @@
 
 #endif
 
-/*
-
-  FIXME: kf.coreaddons: The plugin "runner_switcher.so" explicitly states an Id in the embedded metadata,
-  which is different from the one derived from the filename The Id field from the KPlugin object in the metadata should be removed
-
- */
-
 K_PLUGIN_CLASS_WITH_JSON(Switcher, "plasma-runner-switcher.json")
 
 Switcher::Switcher(QObject *parent, const KPluginMetaData &metaData, const QVariantList &args)

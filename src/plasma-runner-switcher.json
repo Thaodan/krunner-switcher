@@ -9,7 +9,6 @@
         "Description": "Switcher is an app switching plugin. Type part of the application name/title preceded with a dot, e.g. \".emacs\" to switch between apps.",
         "EnabledByDefault": true,
         "Icon": "kde",
-        "Id": "switcher",
         "License": "LGPL 2.1+",
         "Name": "Switcher",
         "ServiceTypes": [
