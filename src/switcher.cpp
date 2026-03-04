@@ -18,7 +18,6 @@
  ***************************************************************************/
 #include "switcher.h"
 
-#include "config-switcher.h"
 
 #include <KLocalizedString>
 #include <KWindowInfo>
@@ -28,12 +27,6 @@
 #include <QIcon>
 #include <QTimer>
 
-#ifdef HAVE_X11
-
-// #include <QtX11Extras/QX11Info>
-#include <netwm.h>
-
-#endif
 
 K_PLUGIN_CLASS_WITH_JSON(Switcher, "plasma-runner-switcher.json")
 
