@@ -50,8 +50,9 @@ Switcher::Switcher(QObject *parent, const KPluginMetaData &metaData, const QVari
     setObjectName(QLatin1String("Switcher"));
 
 
-    addSyntax(KRunner::RunnerSyntax(i18nc("Note this is a KRunner keyword", ".<app name>"),
-                                          i18n("Switch to application by typing a dot and the app name, e.g. '.emacs'")));
+    addSyntax(QStringLiteral(":q:"),
+            i18n("Switch to application by typing a dot and the app "
+                 "name, e.g. '.emacs'"));
 
     connect(this, &KRunner::AbstractRunner::prepare, this, &Switcher::prepareForMatchSession);
     connect(this, &KRunner::AbstractRunner::teardown, this, &Switcher::matchSessionComplete);
@@ -102,14 +103,27 @@ void Switcher::matchSessionComplete() {
 
 // Called in the secondary thread
 void Switcher::match(KRunner::RunnerContext &context) {
-    const QString term = context.query();
-    if (!context.isValid() || !term.startsWith(i18nc("Note this is a KRunner keyword", "."), Qt::CaseInsensitive)) return;
+    if (!context.isValid() && context.query().size() < 3) {
+        return;
+    }
 
     QList<KRunner::QueryMatch> matches;
+    qreal relevance = 0.70;
 
     // keyword match: when term starts with "window" we list all windows
-    // the list can be restricted to windows matching a given name, class, role or desktop
-    const QString windowName = term.mid(1, term.size());
+    // the list can be restricted to windows matching a given name, class, role or
+    // desktop
+
+    KRunner::QueryMatch::CategoryRelevance matchCategoryRelevance;
+    QString term;
+
+    // Maybe change to increase priority instead of making it the highest
+    if (context.query()[0] == '.') {
+        term = context.query().mid(1, -1);
+        relevance = relevance + 0.1;
+    } else {
+        term = context.query();
+    }
 
     QHashIterator<WId, KWindowInfo> it(m_windows);
     while (it.hasNext()) {
@@ -118,14 +132,55 @@ void Switcher::match(KRunner::RunnerContext &context) {
         const KWindowInfo info = it.value();
         const QString windowClass = QString::fromUtf8(info.windowClassName());
 
-        // exclude not matching windows
-        if (!KX11Extras::hasWId(w)) continue;
-
-        if (!windowName.isEmpty() && !info.name().contains(windowName, Qt::CaseInsensitive) &&
-            !windowClass.contains(windowName, Qt::CaseInsensitive)) {
+        if (!KX11Extras::hasWId(w) || (!info.name().contains(term, Qt::CaseInsensitive) && !windowClass.contains(term, Qt::CaseInsensitive)))
             continue;
+        // exclude not matching windows
+
+        static ushort highestMatchSize = 5;
+        static int indexOfTermWindowName = info.name().indexOf(term, 0, Qt::CaseInsensitive);
+
+        /* Match either by windowName or windowClass.
+           Categorize by what matches best.*/
+
+        if (indexOfTermWindowName != -1) {
+            // check fullname match or term fully contains match
+            if (term.size() > highestMatchSize && indexOfTermWindowName == 0) {
+                matchCategoryRelevance = KRunner::QueryMatch::CategoryRelevance::Highest;
+                relevance = relevance + 0.1;
+            } else if (indexOfTermWindowName == 0 /*startswith, but not equals => smaller relevance boost*/) {
+                relevance = relevance + 0.1;
+                matchCategoryRelevance = KRunner::QueryMatch::CategoryRelevance::High;
+            } else {
+                matchCategoryRelevance = KRunner::QueryMatch::CategoryRelevance::Moderate;
+            }
         }
-        matches.append(windowMatch(info));
+
+        static int indexOfTermWindowClass = windowClass.indexOf(term, 0, Qt::CaseInsensitive);
+
+        if (indexOfTermWindowClass != -1) {
+            if (term.size() > highestMatchSize && indexOfTermWindowClass == 0) {
+                matchCategoryRelevance = KRunner::QueryMatch::CategoryRelevance::Highest;
+            } else if (indexOfTermWindowClass == 0) {
+                relevance = relevance * 0.1;
+                if (qToUnderlying(matchCategoryRelevance) < qToUnderlying(KRunner::QueryMatch::CategoryRelevance::High)) {
+                    relevance = relevance + 0.1;
+                    matchCategoryRelevance = KRunner::QueryMatch::CategoryRelevance::High;
+                }
+            } else {
+                if (qToUnderlying(matchCategoryRelevance) < qToUnderlying(KRunner::QueryMatch::CategoryRelevance::Moderate)) {
+                    relevance = relevance + 0.1;
+                    matchCategoryRelevance = KRunner::QueryMatch::CategoryRelevance::Moderate;
+                }
+            }
+
+            if (indexOfTermWindowClass == -1 && indexOfTermWindowName == -1)
+                continue;
+
+            qInfo() << QStringLiteral("Addding info.name %1").arg(info.name());
+            matches.append(windowMatch(info, matchCategoryRelevance, relevance));
+        }
+
+        matches.append(windowMatch(info, matchCategoryRelevance, relevance));
     }
 
     context.addMatches(matches);
@@ -145,7 +200,7 @@ void Switcher::run(const KRunner::RunnerContext &context, const KRunner::QueryMa
 }
 
 
-KRunner::QueryMatch Switcher::windowMatch(const KWindowInfo &info, qreal relevance, const KRunner::QueryMatch::CategoryRelevance categoryRelevance) {
+KRunner::QueryMatch Switcher::windowMatch(const KWindowInfo &info, const KRunner::QueryMatch::CategoryRelevance categoryRelevance, const qreal relevance) {
     KRunner::QueryMatch match(this);
     match.setCategoryRelevance(categoryRelevance);
     match.setData(QString::number(info.win()));

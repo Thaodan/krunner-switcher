@@ -45,8 +45,9 @@ private Q_SLOTS:
     void gatherInfo();
 
 private:
-    KRunner::QueryMatch windowMatch(const KWindowInfo &info, qreal relevance = 1.0,
-                                    KRunner::QueryMatch::CategoryRelevance categoryRelevance = KRunner::QueryMatch::CategoryRelevance::Highest);
+    KRunner::QueryMatch windowMatch(const KWindowInfo &info,
+                                    const KRunner::QueryMatch::CategoryRelevance categoryRelevance,
+                                    const qreal relevance = 1.0);
 
     QHash<WId, KWindowInfo> m_windows;
     QHash<WId, QIcon> m_icons;
