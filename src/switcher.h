@@ -23,9 +23,9 @@
 
 class KWindowInfo;
 
-
-class Switcher : public KRunner::AbstractRunner {
-Q_OBJECT
+class Switcher : public KRunner::AbstractRunner
+{
+    Q_OBJECT
 
 public:
     Switcher(QObject *parent, const KPluginMetaData &metaData, const QVariantList &args);
@@ -45,9 +45,7 @@ private Q_SLOTS:
     void gatherInfo();
 
 private:
-    KRunner::QueryMatch windowMatch(const KWindowInfo &info,
-                                    const KRunner::QueryMatch::CategoryRelevance categoryRelevance,
-                                    const qreal relevance = 1.0);
+    KRunner::QueryMatch windowMatch(const KWindowInfo &info, const KRunner::QueryMatch::CategoryRelevance categoryRelevance, const qreal relevance = 1.0);
 
     QHash<WId, KWindowInfo> m_windows;
     QHash<WId, QIcon> m_icons;

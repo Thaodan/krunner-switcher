@@ -25,9 +25,16 @@ include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 include(FeatureSummary)
+include(KDEClangFormat)
+include(KDEGitCommitHooks)
 
 add_subdirectory(src)
 
 
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
+
+# add clang-format target for all our real source files
+file(GLOB ALL_CLANG_FORMAT_SOURCE_FILES src/*.cpp *.h)
+kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
+kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)

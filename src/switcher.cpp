@@ -20,13 +20,13 @@
 
 #include "config-switcher.h"
 
-#include <QTimer>
+#include <KLocalizedString>
+#include <KWindowInfo>
+#include <KWindowSystem>
+#include <KX11Extras>
 #include <QDebug>
 #include <QIcon>
-#include <KWindowSystem>
-#include <KWindowInfo>
-#include <KX11Extras>
-#include <KLocalizedString>
+#include <QTimer>
 
 #ifdef HAVE_X11
 
@@ -42,17 +42,17 @@
 
  */
 
-K_PLUGIN_CLASS_WITH_JSON(Switcher , "plasma-runner-switcher.json")
+K_PLUGIN_CLASS_WITH_JSON(Switcher, "plasma-runner-switcher.json")
 
 Switcher::Switcher(QObject *parent, const KPluginMetaData &metaData, const QVariantList &args)
-        : AbstractRunner(parent, metaData) {
+    : AbstractRunner(parent, metaData)
+{
     Q_UNUSED(args);
     setObjectName(QLatin1String("Switcher"));
 
-
     addSyntax(QStringLiteral(":q:"),
-            i18n("Switch to application by typing a dot and the app "
-                 "name, e.g. '.emacs'"));
+              i18n("Switch to application by typing a dot and the app "
+                   "name, e.g. '.emacs'"));
 
     connect(this, &KRunner::AbstractRunner::prepare, this, &Switcher::prepareForMatchSession);
     connect(this, &KRunner::AbstractRunner::teardown, this, &Switcher::matchSessionComplete);
@@ -61,21 +61,18 @@ Switcher::Switcher(QObject *parent, const KPluginMetaData &metaData, const QVari
 Switcher::~Switcher() = default;
 
 // Called in the main thread
-void Switcher::gatherInfo() {
-    for (const WId &w: KX11Extras::windows()) {
-        KWindowInfo info(w, NET::WMWindowType | NET::WMDesktop |
-                            NET::WMState | NET::XAWMState |
-                            NET::WMName,
+void Switcher::gatherInfo()
+{
+    for (const WId &w : KX11Extras::windows()) {
+        KWindowInfo info(w,
+                         NET::WMWindowType | NET::WMDesktop | NET::WMState | NET::XAWMState | NET::WMName,
                          NET::WM2WindowClass | NET::WM2WindowRole | NET::WM2AllowedActions);
         if (info.valid() && info.name() != "KRunner — krunner") {
             // ignore NET::Tool and other special window types
-            NET::WindowType wType = info.windowType(NET::NormalMask | NET::DesktopMask | NET::DockMask |
-                                                    NET::ToolbarMask | NET::MenuMask | NET::DialogMask |
-                                                    NET::OverrideMask | NET::TopMenuMask |
-                                                    NET::UtilityMask | NET::SplashMask);
+            NET::WindowType wType = info.windowType(NET::NormalMask | NET::DesktopMask | NET::DockMask | NET::ToolbarMask | NET::MenuMask | NET::DialogMask
+                                                    | NET::OverrideMask | NET::TopMenuMask | NET::UtilityMask | NET::SplashMask);
 
-            if (wType != NET::Normal && wType != NET::Override && wType != NET::Unknown &&
-                wType != NET::Dialog && wType != NET::Utility) {
+            if (wType != NET::Normal && wType != NET::Override && wType != NET::Unknown && wType != NET::Dialog && wType != NET::Utility) {
                 continue;
             }
             m_windows.insert(w, info);
@@ -90,19 +87,22 @@ void Switcher::gatherInfo() {
 }
 
 // Called in the main thread
-void Switcher::prepareForMatchSession() {
+void Switcher::prepareForMatchSession()
+{
     gatherInfo();
 }
 
 // Called in the main thread
-void Switcher::matchSessionComplete() {
+void Switcher::matchSessionComplete()
+{
     m_desktopNames.clear();
     m_icons.clear();
     m_windows.clear();
 }
 
 // Called in the secondary thread
-void Switcher::match(KRunner::RunnerContext &context) {
+void Switcher::match(KRunner::RunnerContext &context)
+{
     if (!context.isValid() && context.query().size() < 3) {
         return;
     }
@@ -187,7 +187,8 @@ void Switcher::match(KRunner::RunnerContext &context) {
 }
 
 // Called in the main thread
-void Switcher::run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match) {
+void Switcher::run(const KRunner::RunnerContext &context, const KRunner::QueryMatch &match)
+{
     Q_UNUSED(context)
     // check if it's a desktop
     if (match.id().startsWith(QLatin1String("windows_desktop"))) {
@@ -199,8 +200,8 @@ void Switcher::run(const KRunner::RunnerContext &context, const KRunner::QueryMa
     KX11Extras::forceActiveWindow(w);
 }
 
-
-KRunner::QueryMatch Switcher::windowMatch(const KWindowInfo &info, const KRunner::QueryMatch::CategoryRelevance categoryRelevance, const qreal relevance) {
+KRunner::QueryMatch Switcher::windowMatch(const KWindowInfo &info, const KRunner::QueryMatch::CategoryRelevance categoryRelevance, const qreal relevance)
+{
     KRunner::QueryMatch match(this);
     match.setCategoryRelevance(categoryRelevance);
     match.setData(QString::number(info.win()));
@@ -221,6 +222,5 @@ KRunner::QueryMatch Switcher::windowMatch(const KWindowInfo &info, const KRunner
     match.setRelevance(relevance);
     return match;
 }
-
 
 #include "switcher.moc"
