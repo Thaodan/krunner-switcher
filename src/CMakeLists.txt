@@ -10,7 +10,11 @@ ecm_qt_declare_logging_category(switcher_SRCS
 )
 
 add_library(krunner_switcher MODULE ${switcher_SRCS})
-target_link_libraries(krunner_switcher Qt6::Widgets KF6::WindowSystem KF6::I18n KF6::Runner)
+target_link_libraries(krunner_switcher
+  Qt${QT_MAJOR_VERSION}::Widgets
+  KF${KF_MAJOR_VERSION}::WindowSystem
+  KF${KF_MAJOR_VERSION}::I18n
+  KF${KF_MAJOR_VERSION}::Runner)
 
 
 

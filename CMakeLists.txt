@@ -4,7 +4,9 @@ project(switcher)
 
 find_package(ECM ${KF6_MIN_VERSION} REQUIRED NO_MODULE)
 
+set(QT_MAJOR_VERSION "6")
 set(QT_MIN_VERSION "6.4.0")
+set(KF_MAJOR_VERSION "6")
 set(KF6_MIN_VERSION "6.4.0")
 
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
@@ -18,11 +20,11 @@ include(KDEClangFormat)
 include(KDEGitCommitHooks)
 
 
-find_package(Qt6 ${QT_MIN_VERSION}
+find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION}
   CONFIG REQUIRED
   COMPONENTS
   Widgets)
-find_package(KF6 ${KF6_MIN_VERSION}
+find_package(KF${KF_MAJOR_VERSION} ${KF6_MIN_VERSION}
   REQUIRED COMPONENTS
   Runner
   I18n
